@@ -1,5 +1,5 @@
-x = "  add   $t0, $zero, $z5 " 
-if x.match(/^\s*(\w{2} | \w{3} | \w{4})(\s+)(\$\w)(\d|\d{2})(\s*),(\s*)((\$\w)(\d|\d{2}) | (\$\w+))(\s*),(\s*)((\$\w)(\d|\d{2}) | (\$\w+))(\s*)$/)
+x = "j Loop"
+if x.match(/^(\s*)(\w|\w{3})(\s+)(\w+)(\s*)$/)
   puts true
 else
   puts false

@@ -47,8 +47,5 @@ class Reg
 			return false
 		end
 	end
-	
-	
-	
 
 end
