@@ -4,7 +4,7 @@ require 'java'
  java_import 'javax.swing.JButton'
  java_import 'javax.swing.JFrame'
  java_import 'javax.swing.JTextArea'
-
+ java_import 'javax.swing.JPanel'
 
 class ButtonListener 
 	include ActionListener
@@ -17,9 +17,6 @@ end
 
 class Gui
 
-  @actionListener = java.awt.event.ActionListener
-  @@panels = javax.swing.JPanel
-  @@frames = javax.swing.JFrame
   @@toolkits = java.awt.Toolkit.getDefaultToolkit()
   
   def initialize
@@ -35,7 +32,7 @@ class Gui
 	textArea = JTextArea.new	
 		
 	
-    mainPanel = @@panels.new(java.awt.GridLayout.new(2,1,5,5))
+    mainPanel = JPanel.new(java.awt.GridLayout.new(2,1,5,5))
   	mainPanel.add(javax.swing.JTextArea.new)
 
 
