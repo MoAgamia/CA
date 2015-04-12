@@ -28,7 +28,7 @@ class Reg
 	end
 
 	def self.checkIFormat command
-        if command.match(/^(\s*)(\w{3,4})(\s+)(\$(\w{1,2}|\w{4}))(\d?)(\s*,\s+)(\$(\w{1,2}|\w{4}))(\d?)(\s*,\s+)(\d+)(\s*)$/) || command.match(/^(\s*)(\w{2,3})(\s+)(\$(\w{1,2}|\w{4}))(\d?)(\s*,\s+)(\d+)(\(\$(\w{1,2}|\w{4})(\d?)\))$/)
+        if command.match(/^(\s*)(\w{3,4})(\s+)(\$([a-z]{1,2}\d?)|zero)(\s*,\s*)(\$([a-z]{1,2}\d?)|zero)(\s*,\s*)(\d+)(\s*)$/) || command.match(/^(\s*)([a-z]{2,3})(\s+)(\$([a-z]{1,2}\d?)|zero)(\s*,\s*)(\d+)(\((\$([a-z]{1,2}\d?)|zero)\))$/)
 			return true
 		else
 			return false
@@ -36,7 +36,7 @@ class Reg
 	end
 	
 	def self.checkRFormat command
-    	if command.match(/^(\s*)(\w{2,4})(\s+)(\$(\w{1,2}|\w{4}))(\d{1,2})(\s*,\s+)(\$(\w{1,2}|\w{4}))(\d{1,2})(\s*,\s+)(\$(\w{1,2}|\w{4}))(\d{1,2})(\s*)$/)
+    	if command.match(/^(\s*)([a-z]{2,4})(\s+)(\$(([a-z]{1,2}\d?)|zero))(\s*,\s*)(\$(([a-z]{1,2}\d?)|zero))(\s*,\s*)(\$(([a-z]{1,2}\d?)|zero))(\s*)$/)
 			return true
 		else
 			return false
@@ -52,7 +52,7 @@ class Reg
 	end
 	
 	def self.checkRJump command
-		if command.match(/^(jr)(\s+)(\$)(([a-z]{1,2}\d)|zero)(\s*)$/)
+		if command.match(/^(jr)(\s+)(\$)(([a-z]{1,2}\d?)|zero)(\s*)$/)
 			return true
 		else
 			return false
@@ -68,7 +68,8 @@ class Reg
 		end
 	end
 
-	 puts self.check("sll $t0, $t0 ,4")
-
+	puts self.check("add $t1, $t0, $t6")
+	puts self.check("add $t1, $t0 $t6")
+	puts self.check("add $t1, $t0 ,0")
 
 end
