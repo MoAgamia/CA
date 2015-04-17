@@ -115,7 +115,7 @@ class Reg
 		end
 	end
 
-	# self.run
+	 self.run
 	
 	puts self.check("addi $t1, $t0, -8")	
 	
