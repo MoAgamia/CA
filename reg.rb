@@ -52,9 +52,6 @@ class Reg
   end
 
   def self.check_i_format command
-    # @rd = @params + @return + @temp + @save + @stack
-    # @rd.map!{ |r| r = "\\" + r}
-    # @rs = @rd + @zero.map{ |r| r = "\\" + r}
     op = command.split[0]
     case op
     when "addi"
@@ -71,9 +68,6 @@ class Reg
   end
 
   def self.check_r_format command
-    # @rd = @params + @return + @temp + @save + @stack
-    # @rd.map!{ |r| r = "\\" + r}
-    # @rs = @rd + @zero.map{ |r| r = "\\" + r}
     op = command.split[0]
     case op
     when "sll", "srl"
@@ -117,22 +111,22 @@ class Reg
 
 #   self.run
 
-  puts self.check("addi $t1, $t0, -8")
+  # puts self.check("addi $t1, $t0, -8")
 
-  puts self.check("lbu $t1, $t0, 8")
+  # puts self.check("lbu $t1, $t0, 8")
 
-  puts self.check("lbu $0, 0($t0)")
+  # puts self.check("lbu $0, 0($t0)")
 
-  puts (self.check("lbu $t1, 0($t1)").to_s + "this one")
+  # puts (self.check("lbu $t1, 0($t1)").to_s + "this one")
 
-  puts self.check("jal LOOP")
+  # puts self.check("jal LOOP")
 
-  puts self.check("jal 3LOOP")
+  # puts self.check("jal 3LOOP")
 
-  puts self.check("jr $ra")
+  # puts self.check("jr $ra")
 
-  puts self.check("beq $0, $0, LOOP3")
+  # puts self.check("beq $0, $0, LOOP3")
 
-  puts self.check("beq $0, $0, 9")
+  # puts self.check("beq $0, $0, 9")
 
 end

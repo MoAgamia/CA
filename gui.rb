@@ -1,16 +1,29 @@
 require 'java'
+require './check_style'
+require './pipeline'
 
 java_import 'java.awt.event.ActionListener'
 java_import 'javax.swing.JButton'
 java_import 'javax.swing.JFrame'
 java_import 'javax.swing.JTextArea'
 java_import 'javax.swing.JPanel'
+java_import 'javax.swing.JScrollPane'
 
 class ButtonListener
   include ActionListener
 
+  @textArea
+
+  def initialize text
+    @textArea = text
+  end
+
   def actionPerformed(e)
-    puts "clicked"
+    text = @textArea.getText
+    out = CheckStyle.check text
+    puts "mips_> #{out}"
+    Pipeline.iterate out if out.kind_of? Array
+    @textArea.requestFocusInWindow
   end
 end
 
@@ -24,15 +37,15 @@ class Gui
     frame.setSize(400,400)
     frame.setLocation((@@toolkits.getScreenSize().getWidth  - 400) / 2 , (@@toolkits.getScreenSize().getHeight - 400) / 2)
 
-    button = javax.swing.JButton.new("Compile")
-    button = JButton.new( "Click me!")
+    # button = javax.swing.JButton.new("Compile")
+    button = JButton.new("Execute")
 
     textArea = JTextArea.new
 
     mainPanel = JPanel.new(java.awt.GridLayout.new(2,1,5,5))
-    mainPanel.add(javax.swing.JTextArea.new)
+    mainPanel.add(textArea)
 
-    buttonAction = ButtonListener.new
+    buttonAction = ButtonListener.new textArea
     button.addActionListener buttonAction
 
     mainPanel.add(button)

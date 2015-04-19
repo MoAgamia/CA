@@ -1,2 +1,2 @@
 # CA
-Pipline MIPS assembler
+Pipelined MIPS assembler
