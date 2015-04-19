@@ -115,7 +115,7 @@ class Reg
     end
   end
 
-  self.run
+#   self.run
 
   puts self.check("addi $t1, $t0, -8")
 
@@ -123,7 +123,7 @@ class Reg
 
   puts self.check("lbu $0, 0($t0)")
 
-  puts self.check("lbu $t0, 0($t0)")
+  puts (self.check("lbu $t1, 0($t1)").to_s + "this one")
 
   puts self.check("jal LOOP")
 

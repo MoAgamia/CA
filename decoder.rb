@@ -22,7 +22,7 @@ class Decode
       rt = @@registerNumbers.fetch stripped[2].strip[0..2]
       shamt = stripped[3].strip.to_s(2)
       function = @@functionCodes.fetch(stripped[0])
-      binary = opcode + rs + binaryFiller(rt.to_s(2) , 5) + binaryFiller(rd.to_s(2) , 5) + binaryFiller(shamt , 5) + function
+      binary = opcode + rs + signExtend(rt.to_s(2) , 5) + signExtend(rd.to_s(2) , 5) + signExtend(shamt , 5) + function
     else
       opcode = @@opCodes.fetch(stripped[0])
       rd = @@registerNumbers.fetch stripped[1].strip[0..2]
@@ -30,30 +30,49 @@ class Decode
       rt = @@registerNumbers.fetch stripped[3].strip[0..2]
       function = @@functionCodes.fetch(stripped[0])
       shamt = "00000"
-      binary = opcode + binaryFiller(rt.to_s(2) , 5) + binaryFiller(rt.to_s(2) , 5) + binaryFiller(rd.to_s(2) , 5) + shamt + function
+      binary = opcode + signExtend(rt.to_s(2) , 5) + signExtend(rt.to_s(2) , 5) + signExtend(rd.to_s(2) , 5) + shamt + function
     end
+    return binary
   end
 
-  def self.iDecoder command
-    stripped = command.strip.split
 
+  def self.iDecoder (command, pc)
+    data = ["lw","sw","lb","lbu","sb"]
+    stripped = command.strip.split
     opcode = @@opCodes.fetch(stripped[0])
-    rs = @@registerNumbers.fetch stripped[1].strip[0..2]
-    rt = @@registerNumbers.fetch stripped[2].strip[0..2]
-    shamt = stripped[3].strip.to_s(2)
-    function = @@functionCodes.fetch(stripped[0])
-    binary = opcode + rs + binaryFiller(rt.to_s(2) , 5) + #cotinue addresssing
+    if(stripped[0] == "addi" || stripped[0] == "beq" || stripped[0] == "bne")
+      rs = @@registerNumbers.fetch stripped[1].strip[0..2]
+      rt = @@registerNumbers.fetch stripped[2].strip[0..2]
+      address = stripped[3].strip.to_i * 4 + pc
+      binary = opcode + signExtend(rs.to_s(2) , 5) + signExtend(rt.to_s(2) , 5) + signExtend(address.to_s(2) , 16)
+
+    elsif(stripped[0] == "lui")
+      rt = @@registerNumbers.fetch stripped[1].strip[0..2]
+      address = stripped[2].strip.to_i * 4 + pc
+      rs = "00000"
+      binary = opcode + rs + signExtend(rt.to_s(2) , 5) + signExtend(address.to_s(2) , 16)
+
+    elsif(data.include? stripped[0])
+      rt = @@registerNumbers.fetch stripped[1].strip[0..2]
+      rs = @@registerNumbers.fetch stripped[2].strip[2..-2]
+      address = stripped[2][0].to_i * 4 + pc
+      binary = opcode + signExtend(rs.to_s(2) , 5) + signExtend(rt.to_s(2) , 5) + signExtend(address.to_s(2) , 16)
+    end
+
+    return binary
   end
 
   def self.jDecoder command
     stripped = command.strip.split
 
     opcode = @@opCodes.fetch(stripped[0])
-    binary = opcode + rs + binaryFiller(rt.to_s(2) , 5) + binaryFiller(rd.to_s(2) , 5) + binaryFiller(shamt , 5) + function
+    address = stripped[1].to_i * 4
+    binary = opcode + signExtend(address.to_s(2) , 26)
+    return binary
   end
 
 
-  def self.binaryFiller(string , total)
+  def self.signExtend(string , total)
     i = string.length
     while(i<total)
       string = "0" + string
@@ -66,4 +85,4 @@ class Decode
 end
 
 
-puts Decode.rDecoder "add $t1, $t2, $t3"
+puts Decode.jDecoder "j 3000"
