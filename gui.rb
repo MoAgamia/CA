@@ -22,7 +22,7 @@ class ButtonListener
     text = @textArea.getText
     out = CheckStyle.check text
     puts "mips_> #{out}"
-    Pipeline.iterate out if out.kind_of? Array
+    # Pipeline.iterate out[:inst] if out[:inst].kind_of? Array
     @textArea.requestFocusInWindow
   end
 end
@@ -37,7 +37,6 @@ class Gui
     frame.setSize(400,400)
     frame.setLocation((@@toolkits.getScreenSize().getWidth  - 400) / 2 , (@@toolkits.getScreenSize().getHeight - 400) / 2)
 
-    # button = javax.swing.JButton.new("Compile")
     button = JButton.new("Execute")
 
     textArea = JTextArea.new

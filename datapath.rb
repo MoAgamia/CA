@@ -7,9 +7,9 @@ class Datapath
 
 	@@stages = {"IF" => "", "ID"=>"", "EX"=>"", "MEM"=>"", "WB"=>""}
 
+	@pc = 0
 
-
-	def mux sel input0 input1
+	def mux sel, input0, input1
 		if sel == "0"
 			return input0
 		else
@@ -26,12 +26,12 @@ class Datapath
 		return x+input
 	end
 
-	def adder input0 input1
+	def adder input0, input1
 		integer = input0.to_i(2) + input1.to_i(2)
 		return (input).to_s(2)
 	end
 
-	def sll input amount
+	def sll input, amount
 		return (input << amount).to_s(2)
 	end
 

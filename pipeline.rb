@@ -8,7 +8,6 @@ class Pipeline
 		loop do
 			arr.unshift array[0]# unless array.empty?
 			arr.pop if arr.length > 5 || array.empty?
-			# if arr.length > 0
 			puts "----------------------"
 			puts "#{arr}"
 			for i in (arr.length - 1).downto(0)
@@ -25,16 +24,8 @@ class Pipeline
 						puts "write: #{arr[i]}"  if arr[i] != nil
 				end
 			end
-			# puts "----------------------"
-			# end
-			# puts "#{arr}"
 			array.shift
 			break if arr.all? {|x| x.nil?}
-			
 		end
 	end
 end
-
-# Pipeline.iterate (1..10).to_a
-# Pipeline.iterate ["addi $t0, $t0, 10", "add $t0, $t0, $t0", "lw $t0, 12($t0)", "sub $t1, $t0, $s0", "sw $a1, 0($s7)", "beq $s6, $0, EXT", "jal LOOP", "jr $ra"]
-# Pipeline.iterate ["addi $t0, $t0, 10", "add $t0, $t0, $t0"]
