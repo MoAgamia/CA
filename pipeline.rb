@@ -2,6 +2,9 @@ class Pipeline
 	def self.iterate array
 		arr = []
 		puts "#{array}"
+		for i in 0...(5 - array.length)
+			array << nil
+		end
 		loop do
 			arr.unshift array[0]# unless array.empty?
 			arr.pop if arr.length > 5 || array.empty?
@@ -32,5 +35,6 @@ class Pipeline
 	end
 end
 
-# Test.iterate (1..10).to_a
-# Test.iterate ["addi $t0, $t0, 10", "add $t0, $t0, $t0", "lw $t0, 12($t0)", "sub $t1, $t0, $s0", "sw $a1, 0($s7)", "beq $s6, $0, EXT", "jal LOOP", "jr $ra"]
+# Pipeline.iterate (1..10).to_a
+# Pipeline.iterate ["addi $t0, $t0, 10", "add $t0, $t0, $t0", "lw $t0, 12($t0)", "sub $t1, $t0, $s0", "sw $a1, 0($s7)", "beq $s6, $0, EXT", "jal LOOP", "jr $ra"]
+# Pipeline.iterate ["addi $t0, $t0, 10", "add $t0, $t0, $t0"]

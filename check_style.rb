@@ -9,6 +9,8 @@ class CheckStyle
 		text.each { |c|
 			line = line + 1
 			next if (c =~ /^\#.*$/) != nil
+			c = c.split("#")[0] if (c =~ /^.*\#+.*$/) != nil
+			# puts c
 			if (c =~ /^[a-zA-Z]\w*:\s+.*$/) != nil
 				flag = Reg.check c.split(":")[1]
 				instructions << c.split(":")[1].strip if flag
