@@ -13,7 +13,7 @@ class ControlUnit
   @@aluControl = {"add" => "0010", "sub" => "0110", "and" => "0000", "or" => "0001", "slt" => "0111"}
 
 
-  def self.RtypeSignals(binary, function)
+  def self.rtypeSignals(binary, function)
 
     if(function == "jr")
       @@controlSignals[:regdst] = "0"
@@ -29,12 +29,83 @@ class ControlUnit
     @@controlSignals[:jump] = "0"
     @@controlSignals[:alusrc] = "0"
     if(@@aluControl.include? function)
-    @@controlSignals[:aluop] = @@aluControl.fetch function
+      @@controlSignals[:aluop] = @@aluControl.fetch function
     else
       @@controlSignals[:aluop] = "0000"
     end
 
   end
+
+
+  def self.itypeSignals(binary, function)
+    @@controlSignals[:regdst] = "0"
+    @@controlSignals[:jump] = "0"
+
+    case fucntion
+    when "beq" , "bne"
+      @@controlSignals[:branch] = "1"
+      @@controlSignals[:memwrite] = "0"
+      @@controlSignals[:memread] = "0"
+      @@controlSignals[:regwrite] = "0"
+      @@controlSignals[:memtoreg] = "1"
+      @@controlSignals[:alusrc] = "0"
+    when "lw", "lb" , "lbu"
+      @@controlSignals[:branch] = "0"
+      @@controlSignals[:memwrite] = "0"
+      @@controlSignals[:memread] = "1"
+      @@controlSignals[:regwrite] = "1"
+      @@controlSignals[:memtoreg] = "0"
+      @@controlSignals[:alusrc] = "1"
+    when "sw" , "sb"
+      @@controlSignals[:branch] = "0"
+      @@controlSignals[:memwrite] = "1"
+      @@controlSignals[:memread] = "0"
+      @@controlSignals[:regwrite] = "0"
+      @@controlSignals[:memtoreg] = "1"
+      @@controlSignals[:alusrc] = "1"
+    when "addi"
+      @@controlSignals[:branch] = "0"
+      @@controlSignals[:memwrite] = "0"
+      @@controlSignals[:memread] = "0"
+      @@controlSignals[:regwrite] = "1"
+      @@controlSignals[:memtoreg] = "1"
+      @@controlSignals[:alusrc] = "0"
+    when "lui"
+      @@controlSignals[:branch] = "0"
+      @@controlSignals[:memwrite] = "0"
+      @@controlSignals[:memread] = "1"
+      @@controlSignals[:regwrite] = "1"
+      @@controlSignals[:memtoreg] = "0"
+      @@controlSignals[:alusrc] = "1"
+    end
+
+    if(@@aluControl.include? function)
+      @@controlSignals[:aluop] = @@aluControl.fetch function
+    else
+      @@controlSignals[:aluop] = "0000"
+    end
+
+  end
+
+
+  def self.jtypeSignals(binary, function)
+    @@controlSignals[:regdst] = "0"
+    @@controlSignals[:jump] = "1"
+    @@controlSignals[:branch] = "0"
+    @@controlSignals[:memwrite] = "0"
+    @@controlSignals[:memread] = "0"
+    @@controlSignals[:regwrite] = "0"
+    @@controlSignals[:memtoreg] = "0"
+    @@controlSignals[:alusrc] = "0"
+
+    if(@@aluControl.include? function)
+      @@controlSignals[:aluop] = @@aluControl.fetch function
+    else
+      @@controlSignals[:aluop] = "0000"
+    end
+  end
+
+
 
   def self.rEncoder command
     stripped = command.strip.split
@@ -68,8 +139,8 @@ class ControlUnit
       shamt = "00000"
       binary = opcode + signExtend(rs.to_s(2) , 5) + signExtend(rt.to_s(2) , 5) + signExtend(rd.to_s(2) , 5) + shamt + function
     end
-    RtypeSignals(binary , stripped[0])
-    return binary
+    rtypeSignals(binary , stripped[0])
+
   end
 
 
@@ -84,13 +155,15 @@ class ControlUnit
       binary = opcode + signExtend(rs.to_s(2) , 5) + signExtend(rt.to_s(2) , 5) + signExtend(address.to_s(2) , 16)
 
     elsif(stripped[0] == "addi")
-      rs = @@registerNumbers.fetch stripped[1].strip[0..2]
-      rt = @@registerNumbers.fetch stripped[2].strip[0..2]
+      rs = @@registerNumbers.fetch stripped[2].strip[0..2]
+      rt = @@registerNumbers.fetch stripped[1].strip[0..2]
+      address = stripped[3].to_i
+      binary = opcode + signExtend(rs.to_s(2) , 5) + signExtend(rt.to_s(2) , 5) + signExtend(address.to_s(2) , 16)
 
     elsif(stripped[0] == "lui")
-      rt = @@registerNumbers.fetch stripped[1].strip[0..2]
-      address = stripped[2].strip.to_i * 4 + pc
       rs = "00000"
+      rt = @@registerNumbers.fetch stripped[1].strip[0..2]
+      address = stripped[2].to_i
       binary = opcode + rs + signExtend(rt.to_s(2) , 5) + signExtend(address.to_s(2) , 16)
 
     elsif(data.include? stripped[0])
@@ -99,8 +172,7 @@ class ControlUnit
       address = stripped[2][0].to_i * 4 + pc
       binary = opcode + signExtend(rs.to_s(2) , 5) + signExtend(rt.to_s(2) , 5) + signExtend(address.to_s(2) , 16)
     end
-
-    return "i" + binary
+    itypeSignals(binary, function)
   end
 
   def self.jEncoder command
@@ -109,7 +181,7 @@ class ControlUnit
     opcode = @@opCodes.fetch(stripped[0].intern)
     address = stripped[1].to_i * 4
     binary = opcode + signExtend(address.to_s(2) , 26)
-    return "j"+ binary
+    jtypeSignals(binary, function)
   end
 
 
@@ -127,6 +199,3 @@ class ControlUnit
   end
 
 end
-
-# puts ControlUnit.rEncoder("jr $t1")
-puts  ControlUnit.printHash
