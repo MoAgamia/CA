@@ -23,13 +23,13 @@ class Reg
   @rs = @rd + @zero.map{ |r| r = "\\" + r}
 
   # def self.p s, n
-  # 	string = "["
-  # 	for i in 0...n
-  # 		string += "\"$#{s}#{i}\""
-  # 		string += ", " if i != n-1
-  # 	end
-  # 	string += "]"
-  # 	puts string
+  #   string = "["
+  #   for i in 0...n
+  #     string += "\"$#{s}#{i}\""
+  #     string += ", " if i != n-1
+  #   end
+  #   string += "]"
+  #   puts string
   # end
 
   # self.p "k", 2
@@ -51,6 +51,23 @@ class Reg
     end
   end
 
+  def self.get_format command
+    op = command.split[0]
+    if @i_format_array.include? op
+      "i"
+    elsif @r_format_array.include? op # DONE
+      "r"
+    elsif @j_format_array.include? op # DONE
+      "j"
+    else
+      "n"
+    end
+  end
+
+  def self.get_rs
+    @rs
+  end
+
   def self.check_i_format command
     op = command.split[0]
     case op
@@ -60,9 +77,9 @@ class Reg
       (command =~ /^(\s*)(#{op})(\s+)(#{@rs.join "|"})(,\s+)(#{@rs.join "|"})(,\s+)([a-zA-Z]\w*)(\s*)$/) != nil
     else
       if op[0] == 'l'
-	(command =~ /^(\s*)(#{op})(\s+)(#{@rd.join "|"})(,\s+)([-]?\d+\((#{@rs.join "|"})\))(\s*)$/) != nil
+        (command =~ /^(\s*)(#{op})(\s+)(#{@rd.join "|"})(,\s+)(\d+\((#{@rs.join "|"})\))(\s*)$/) != nil
       else
-	(command =~ /^(\s*)(#{op})(\s+)(#{@rs.join "|"})(,\s+)([-]?\d+\((#{@rs.join "|"})\))(\s*)$/) != nil
+        (command =~ /^(\s*)(#{op})(\s+)(#{@rs.join "|"})(,\s+)(\d+\((#{@rs.join "|"})\))(\s*)$/) != nil
       end
     end
   end
@@ -109,7 +126,7 @@ class Reg
     end
   end
 
-#   self.run
+  #   self.run
 
   # puts self.check("addi $t1, $t0, -8")
 

@@ -1,14 +1,18 @@
 class ControlUnit
 
-  @@controlSignals = {:regdst => "0", :branch => "0", :memwrite => "0", :memread => "0", :regwrite => "0", :memtoreg => "0", :jump => "0",  :alusrc => "0", :aluop => "0"}
+  @@controlSignals = {:regdst => "0", :branch => "0", :memwrite => "0", :memread => "0", :regwrite => "0", :memtoreg => "0",
+    :jump => "0",  :alusrc => "0", :aluop => "0"}
 
-  @@opCodes = {:lw =>"100011", :lb =>"100000", :lbu =>"100100", :sw =>"101011", :sb =>"101000", :lui =>"001111", :beq =>"000100", :bne =>"000101", :addi =>"001000", :add =>"000000", :sub =>"000000", :nor =>"000000", :and =>"000000", :slt =>"000000", :sltu =>"000000", :sll =>"000000", :srl =>"000000", :jr =>"000000", :j =>"000010", :jal=>"000011"}
+  @@opCodes = {:lw =>"100011", :lb =>"100000", :lbu =>"100100", :sw =>"101011", :sb =>"101000", :lui =>"001111", :beq =>"000100",
+    :bne =>"000101", :addi =>"001000", :add =>"000000", :sub =>"000000", :nor =>"000000", :and =>"000000", :slt =>"000000",
+    :sltu =>"000000", :sll =>"000000", :srl =>"000000", :jr =>"000000", :j =>"000010", :jal=>"000011"}
 
-  @@functionCodes = {"add"=>"100000", "sub"=>"100010", "nor"=>"100111", "and"=>"100100", "slt"=>"101010", "sltu"=>"101011", "sll"=>"000000", "srl"=>"000010", "jr"=>"001000"}
+  @@functionCodes = {"add"=>"100000", "sub"=>"100010", "nor"=>"100111", "and"=>"100100", "slt"=>"101010", "sltu"=>"101011",
+    "sll"=>"000000", "srl"=>"000010", "jr"=>"001000"}
 
   @@registerNumbers = {"$zero"=>0, "$0"=>0, "$at"=>1, "$v0"=>2, "$v1"=>3, "$t8"=>24, "$t9"=>25, "$k0"=>26, "$k1"=>27, "$gp"=>28,
-                       "$sp"=>29, "$fp"=>30, "$ra"=>31, "$t0"=>8, "$t1"=>9, "$t2"=>10, "$t3"=>11, "$t4"=>12, "$t5"=>13, "$t6"=>14, "$t7"=>15, "$a0"=>4,
-                       "$a1"=>5, "$a2"=>6, "$a3"=>7, "$s0"=>16, "$s1"=>17, "$s2"=>18, "$s3"=>19, "$s4"=>20, "$s5"=>21, "$s6"=>22, "$s7"=>23}
+    "$sp"=>29, "$fp"=>30, "$ra"=>31, "$t0"=>8, "$t1"=>9, "$t2"=>10, "$t3"=>11, "$t4"=>12, "$t5"=>13, "$t6"=>14, "$t7"=>15, "$a0"=>4,
+    "$a1"=>5, "$a2"=>6, "$a3"=>7, "$s0"=>16, "$s1"=>17, "$s2"=>18, "$s3"=>19, "$s4"=>20, "$s5"=>21, "$s6"=>22, "$s7"=>23}
 
   @@aluControl = {"add" => "0010", "sub" => "0110", "and" => "0000", "or" => "0001", "slt" => "0111"}
 
@@ -29,7 +33,7 @@ class ControlUnit
     @@controlSignals[:jump] = "0"
     @@controlSignals[:alusrc] = "0"
     if(@@aluControl.include? function)
-    @@controlSignals[:aluop] = @@aluControl.fetch function
+      @@controlSignals[:aluop] = @@aluControl.fetch function
     else
       @@controlSignals[:aluop] = "0000"
     end
@@ -129,4 +133,4 @@ class ControlUnit
 end
 
 # puts ControlUnit.rEncoder("jr $t1")
-puts  ControlUnit.printHash
+# puts  ControlUnit.printHash
