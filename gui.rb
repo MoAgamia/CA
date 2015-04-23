@@ -1,5 +1,6 @@
 require 'java'
-require './check_style'
+# require './check_style'
+require './datapath'
 require './pipeline'
 
 java_import 'java.awt.event.ActionListener'
@@ -20,9 +21,8 @@ class ButtonListener
 
   def actionPerformed(e)
     text = @textArea.getText
-    out = CheckStyle.check text
-    puts "mips_> #{out}"
-    # Pipeline.iterate out[:inst] if out[:inst].kind_of? Array
+    datapath = Datapath.new
+    datapath.load_instructions text
     @textArea.requestFocusInWindow
   end
 end
