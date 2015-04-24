@@ -45,7 +45,7 @@ class ControlUnit
     @@controlSignals[:regdst] = "0"
     @@controlSignals[:jump] = "0"
 
-    case fucntion
+    case function
     when "beq" , "bne"
       @@controlSignals[:branch] = "1"
       @@controlSignals[:memwrite] = "0"

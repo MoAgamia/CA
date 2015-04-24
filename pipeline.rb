@@ -8,12 +8,14 @@ class Pipeline
 		@datapath = datapath
 		@pc = datapath.pc
 		@instructions = datapath.instructions
-		@lables = datapath.labels
+		@labels = datapath.labels
 		@registers = datapath.registerValues
 		@data = datapath.memory
 		# @id_control = {}
 		# @ex_control = {}
 		# @mem_control = {}
+		# puts "instructions: #{@instructions}"
+		# puts "labels: #{@labels}"
 		iterate
 	end
 
@@ -51,7 +53,6 @@ class Pipeline
 	def iterate
 		array = @instructions.dup
 		arr = Array.new 5
-		puts "instructions: #{@instructions}"
 		j = 0
 		loop do
 			arr.unshift fetch

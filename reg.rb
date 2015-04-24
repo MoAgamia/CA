@@ -51,23 +51,6 @@ class Reg
     end
   end
 
-  def self.get_format command
-    op = command.split[0]
-    if @i_format_array.include? op
-      "i"
-    elsif @r_format_array.include? op # DONE
-      "r"
-    elsif @j_format_array.include? op # DONE
-      "j"
-    else
-      "n"
-    end
-  end
-
-  def self.get_rs
-    @rs
-  end
-
   def self.check_i_format command
     op = command.split[0]
     case op
@@ -111,6 +94,27 @@ class Reg
 
   def self.decode command
     command.split.map{ |s| s.gsub(",", "")}
+  end
+
+  def self.get_format command
+    op = command.split[0]
+    if @i_format_array.include? op
+      "i"
+    elsif @r_format_array.include? op # DONE
+      "r"
+    elsif @j_format_array.include? op # DONE
+      "j"
+    else
+      "n"
+    end
+  end
+
+  def self.get_rs
+    @rs
+  end
+
+  def self.branch_command? command
+    ["bne", "beq"].include? command.split[0]
   end
 
   def self.run
