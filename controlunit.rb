@@ -17,7 +17,7 @@ class ControlUnit
   @@aluControl = {"add" => "0010", "sub" => "0110", "and" => "0000", "or" => "0001", "slt" => "0111"}
 
 
-  def self.rtypeSignals(binary, function)
+  def self.rtypeSignals(function)
 
     if(function == "jr")
       @@controlSignals[:regdst] = "0"
@@ -37,50 +37,50 @@ class ControlUnit
     else
       @@controlSignals[:aluop] = "0000"
     end
-
+    @@controlSignals
   end
 
 
-  def self.itypeSignals(binary, function)
+  def self.itypeSignals(function)
     @@controlSignals[:regdst] = "0"
     @@controlSignals[:jump] = "0"
 
     case fucntion
-    when "beq" , "bne"
-      @@controlSignals[:branch] = "1"
-      @@controlSignals[:memwrite] = "0"
-      @@controlSignals[:memread] = "0"
-      @@controlSignals[:regwrite] = "0"
-      @@controlSignals[:memtoreg] = "1"
-      @@controlSignals[:alusrc] = "0"
-    when "lw", "lb" , "lbu"
-      @@controlSignals[:branch] = "0"
-      @@controlSignals[:memwrite] = "0"
-      @@controlSignals[:memread] = "1"
-      @@controlSignals[:regwrite] = "1"
-      @@controlSignals[:memtoreg] = "0"
-      @@controlSignals[:alusrc] = "1"
-    when "sw" , "sb"
-      @@controlSignals[:branch] = "0"
-      @@controlSignals[:memwrite] = "1"
-      @@controlSignals[:memread] = "0"
-      @@controlSignals[:regwrite] = "0"
-      @@controlSignals[:memtoreg] = "1"
-      @@controlSignals[:alusrc] = "1"
-    when "addi"
-      @@controlSignals[:branch] = "0"
-      @@controlSignals[:memwrite] = "0"
-      @@controlSignals[:memread] = "0"
-      @@controlSignals[:regwrite] = "1"
-      @@controlSignals[:memtoreg] = "1"
-      @@controlSignals[:alusrc] = "0"
-    when "lui"
-      @@controlSignals[:branch] = "0"
-      @@controlSignals[:memwrite] = "0"
-      @@controlSignals[:memread] = "1"
-      @@controlSignals[:regwrite] = "1"
-      @@controlSignals[:memtoreg] = "0"
-      @@controlSignals[:alusrc] = "1"
+      when "beq" , "bne"
+        @@controlSignals[:branch] = "1"
+        @@controlSignals[:memwrite] = "0"
+        @@controlSignals[:memread] = "0"
+        @@controlSignals[:regwrite] = "0"
+        @@controlSignals[:memtoreg] = "1"
+        @@controlSignals[:alusrc] = "0"
+      when "lw", "lb" , "lbu"
+        @@controlSignals[:branch] = "0"
+        @@controlSignals[:memwrite] = "0"
+        @@controlSignals[:memread] = "1"
+        @@controlSignals[:regwrite] = "1"
+        @@controlSignals[:memtoreg] = "0"
+        @@controlSignals[:alusrc] = "1"
+      when "sw" , "sb"
+        @@controlSignals[:branch] = "0"
+        @@controlSignals[:memwrite] = "1"
+        @@controlSignals[:memread] = "0"
+        @@controlSignals[:regwrite] = "0"
+        @@controlSignals[:memtoreg] = "1"
+        @@controlSignals[:alusrc] = "1"
+      when "addi"
+        @@controlSignals[:branch] = "0"
+        @@controlSignals[:memwrite] = "0"
+        @@controlSignals[:memread] = "0"
+        @@controlSignals[:regwrite] = "1"
+        @@controlSignals[:memtoreg] = "1"
+        @@controlSignals[:alusrc] = "0"
+      when "lui"
+        @@controlSignals[:branch] = "0"
+        @@controlSignals[:memwrite] = "0"
+        @@controlSignals[:memread] = "1"
+        @@controlSignals[:regwrite] = "1"
+        @@controlSignals[:memtoreg] = "0"
+        @@controlSignals[:alusrc] = "1"
     end
 
     if(@@aluControl.include? function)
@@ -88,11 +88,11 @@ class ControlUnit
     else
       @@controlSignals[:aluop] = "0000"
     end
-
+    @@controlSignals
   end
 
 
-  def self.jtypeSignals(binary, function)
+  def self.jtypeSignals(function)
     @@controlSignals[:regdst] = "0"
     @@controlSignals[:jump] = "1"
     @@controlSignals[:branch] = "0"
@@ -107,15 +107,13 @@ class ControlUnit
     else
       @@controlSignals[:aluop] = "0000"
     end
+    @@controlSignals
   end
-
-
 
   def self.rEncoder command
     stripped = command.strip.split
     shifting = false
-
-
+    
     if (stripped[0] == "sll" || stripped[0] == "srl")
       opcode = @@opCodes.fetch(stripped[0].intern)
       rd = @@registerNumbers.fetch stripped[1].strip[0..2]
@@ -143,7 +141,7 @@ class ControlUnit
       shamt = "00000"
       binary = opcode + signExtend(rs.to_s(2) , 5) + signExtend(rt.to_s(2) , 5) + signExtend(rd.to_s(2) , 5) + shamt + function
     end
-    rtypeSignals(binary , stripped[0])
+    rtypeSignals(stripped[0])
 
   end
 
@@ -176,7 +174,7 @@ class ControlUnit
       address = stripped[2][0].to_i * 4 + pc
       binary = opcode + signExtend(rs.to_s(2) , 5) + signExtend(rt.to_s(2) , 5) + signExtend(address.to_s(2) , 16)
     end
-    itypeSignals(binary, function)
+    itypeSignals(function)
   end
 
   def self.jEncoder command
@@ -185,13 +183,13 @@ class ControlUnit
     opcode = @@opCodes.fetch(stripped[0].intern)
     address = stripped[1].to_i * 4
     binary = opcode + signExtend(address.to_s(2) , 26)
-    jtypeSignals(binary, function)
+    jtypeSignals(function)
   end
 
 
   def self.signExtend(string , total)
     i = string.length
-    while(i<total)
+    while(i < total)
       string = "0" + string
       i+=1
     end
