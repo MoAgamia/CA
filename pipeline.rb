@@ -67,9 +67,10 @@ class Pipeline
 					when 2
 						puts "	execute: #{arr[i]}"
 					when 3
-						memory arr[i] if arr[i]
+						memory arr[i]
 					when 4
-						puts "	write: #{arr[i]}"
+						# puts "	write: #{arr[i]}"
+						write arr[i]
 				end
 			end
 			break if arr.all? {|x| x.nil?}
@@ -89,16 +90,17 @@ class Pipeline
 		format = Reg.get_format command
 		case format
 		when 'i'
-			puts "	decode: #{command}"# ---- #{ControlUnit.iEncoder command, @pc}"
+			puts "	decode: #{command} ---- #{ControlUnit.iEncoder command, @pc}"
 		when 'r'
-			puts "	decode: #{command}"# ---- #{ControlUnit.rEncoder command}"
+			puts "	decode: #{command} ---- #{ControlUnit.rEncoder command}"
 		when 'j'
-			puts "	decode: #{command}"# ---- #{ControlUnit.jEncoder command}"
+			puts "	decode: #{command} ---- #{ControlUnit.jEncoder command}"
 		end
 	end
 
 	def execute command
 		return if command == nil
+		@alu_result = 0
 	end
 
 	def memory command
@@ -115,9 +117,9 @@ class Pipeline
 		case split[0]
 		when "lw", "lui"
 			raise Exception.new "Offset must be a multiple of four" if offset % 4 != 0
-			(@data[address/4] == nil) ? 0 : @data[address/4]
+			@read_data = (@data[address/4] == nil) ? 0 : @data[address/4]
 		when "lb", "lbu"
-			(@data[address] == nil) ? 0 : @data[address]
+			@read_data = (@data[address] == nil) ? 0 : @data[address]
 		when "sw"
 			raise Exception.new "Offset must be a multiple of four" if offset % 4 != 0
 			@data[address/4] = @registers[split[1]]
@@ -128,8 +130,13 @@ class Pipeline
 	end
 
 	def write command
-		pc = @datapath.adder(@pc, 4).to_i 2
-		@pc = @datapath.
 		return if command == nil
+		if @wb_control[:regwrite] == "0"
+			puts "	no write: #{command}"
+			return			
+		end
+		split = Reg.decode command
+		write_data = @datapath.mux @wb_control[:memtoreg], @read_data, @alu_result
+		@registers[split[1]] = write_data
 	end
 end
