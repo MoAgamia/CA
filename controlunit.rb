@@ -157,13 +157,15 @@ class ControlUnit
 
             if(stripped[3].include? "-")
                 number = command.scan(/-\d+/)[0][1..-1]
-                address = negate number.to_i
+                negNumber= negate number.to_i
+                address = signExtend(negNumber, 16)
+
             else
                 number = stripped[3].to_i
-                address = number.to_s(2)
+                address = zeroExtend(number.to_s(2),16)
             end
 
-            binary = opcode + zeroExtend(rs.to_s(2) , 5) + zeroExtend(rt.to_s(2) , 5) + signExtend(address, 16)
+            binary = opcode + zeroExtend(rs.to_s(2) , 5) + zeroExtend(rt.to_s(2) , 5) + address
 
         when "lui"
             rs = "00000"
@@ -225,5 +227,5 @@ class ControlUnit
 
 end
 
-puts  ControlUnit.iEncoder "addi $t1, $t1, -6" , 0
+puts  ControlUnit.iEncoder "addi $t1, $t1, 6" , 0
 puts ControlUnit.printHash
