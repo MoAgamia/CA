@@ -191,7 +191,7 @@ class ControlUnit
 
 
   def self.signExtend(binary,total)
-      i = string.length
+      i = binary.length
       filler = string[0]
       for i in binary.length..total
           binary = filler + binary
@@ -200,12 +200,14 @@ class ControlUnit
       return binary
   end
 
-  def self.zeroExtend(binary,total)
-      i = string.length
+  def self.zeroExtend(binary , total)
+      i = binary.length
 
-      for i in binary.length..total
+      while (i< total)
           binary = "0" + binary
+          i +=1
       end
+      return binary
   end
 
     def self.printHash
@@ -215,10 +217,9 @@ class ControlUnit
     def self.negate int
         negBinary = "%b" % ~int
         withoutDots = negBinary[2..-1]
-        puts withoutDots
         return (withoutDots.to_i(2) + 0b1).to_s(2)
     end
 
 end
 
-puts  ControlUnit.negate 6
+puts  ControlUnit.zeroExtend((6).to_s(2), 16)
