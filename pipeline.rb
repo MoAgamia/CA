@@ -130,13 +130,13 @@ class Pipeline
 	end
 
 	def write command
-		return if command == nil
-		if @wb_control[:regwrite] == "0"
-			puts "	no write: #{command}"
-			return			
-		end
-		split = Reg.decode command
-		write_data = @datapath.mux @wb_control[:memtoreg], @read_data, @alu_result
-		@registers[split[1]] = write_data
+		# return if command == nil
+		# if @wb_control[:regwrite] == "0"
+		# 	puts "	no write: #{command}"
+		# 	return			
+		# end
+		# split = Reg.decode command
+		# write_data = @datapath.mux @wb_control[:memtoreg], @read_data, @alu_result
+		# @registers[split[1]] = write_data
 	end
 end
