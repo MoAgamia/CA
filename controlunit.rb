@@ -1,4 +1,6 @@
+
 class ControlUnit
+require './reg'
 
   @@controlSignals = {:regdst => "0", :branch => "0", :memwrite => "0", :memread => "0", :regwrite => "0", :memtoreg => "0",
   :jump => "0",  :alusrc => "0", :aluop => "0"}
@@ -45,7 +47,7 @@ class ControlUnit
     @@controlSignals[:regdst] = "0"
     @@controlSignals[:jump] = "0"
 
-    case fucntion
+    case function
     when "beq" , "bne"
       @@controlSignals[:branch] = "1"
       @@controlSignals[:memwrite] = "0"
@@ -172,11 +174,13 @@ class ControlUnit
 
       when "lw","sw","lb","lbu","sb"
           rt = @@registerNumbers.fetch stripped[1].strip[0..2]
-          rs = @@registerNumbers.fetch stripped[2].strip[2..-2]
-          address = stripped[2][0].to_i * 4 + pc
+          rs = @@registerNumbers.fetch (command.scan(/#{Reg.get_rs.join "|"}/)[1])
+          address = command.scan(/\s+\d+/)[0].strip.to_i
+
           binary = opcode + zeroExtend(rs.to_s(2) , 5) + zeroExtend(rt.to_s(2) , 5) + zeroExtend(address.to_s(2) , 16)
       end
       itypeSignals stripped[0]
+      return binary
   end
 
   def self.jEncoder command
@@ -222,4 +226,5 @@ class ControlUnit
 
 end
 
-puts  ControlUnit.signExtend((6).to_s(2), 16)
+puts  ControlUnit.iEncoder "lw $t1, 12($t1)" , 0
+puts ControlUnit.printHash
