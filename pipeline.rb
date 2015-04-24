@@ -1,4 +1,5 @@
 require './controlunit'
+require './alu'
 
 class Pipeline
 
@@ -48,6 +49,7 @@ class Pipeline
 		return if @pc/4 >= @instructions.length
 		command = @instructions[@pc/4]
 		@pc = @datapath.adder(@pc, 4).to_i 2
+		# HANDLING JUMP INSTRUCTIONS
 		if command != nil && (Reg.jump_command? command)
 			puts "	JUMP: #{command} ---- ADDRSS: #{@labels[command.split[1]].to_i / 4}"
 			case command.split[0]
@@ -71,6 +73,9 @@ class Pipeline
 	def decode command
 		puts "	ID: NOP" if command == nil
 		return if command == nil
+		# @one = 0
+		# @two = 0
+		# @alu = "0000"
 		format = Reg.get_format command
 		case format
 			when 'i'
@@ -85,11 +90,21 @@ class Pipeline
 	def execute command
 		puts "	EX: NOP" if command == nil
 		return if command == nil
-		@alu_result = 0
 		puts "	EX: #{command}"
-		if not Reg.jump_command? command
+		return if Reg.jump_command? command
 
-		end
+		puts "	SIG: #{command} ---- #{ControlUnit.get_signals command}"
+		# ControlUnit.get_signals command
+		# puts "	SIG: #{command} ---- #{ControlUnit.printHash}"
+		add_result = 0
+		@one = 0
+		@two = 0
+		@alu = "0000"
+		alu = ALU.new @one, @two, @alu
+		alu = alu.execute
+		@alu_result = alu[:res]
+		zero = alu[:zero]
+		# @pc = @datapath.mux (zero & @ex_control[:branch].to_i), @pc, add_result
 	end
 
 	def memory command
