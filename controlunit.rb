@@ -192,7 +192,7 @@ class ControlUnit
 
   def self.signExtend(binary,total)
       i = binary.length
-      filler = string[0]
+      filler = binary[0]
       for i in binary.length..total
           binary = filler + binary
       end
@@ -222,4 +222,4 @@ class ControlUnit
 
 end
 
-puts  ControlUnit.zeroExtend((6).to_s(2), 16)
+puts  ControlUnit.signExtend((6).to_s(2), 16)
