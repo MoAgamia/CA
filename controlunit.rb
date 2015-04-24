@@ -117,7 +117,7 @@ class ControlUnit
             rt = @@registerNumbers.fetch stripped[2].strip[0..2]
             shamt = stripped[3].strip.to_s(2)
             function = @@functionCodes.fetch(stripped[0])
-            binary = opcode + rs + signExtend(rt.to_s(2) , 5) + signExtend(rd.to_s(2) , 5) + signExtend(shamt , 5) + function
+            binary = opcode + rs + zeroExtend(rt.to_s(2) , 5) + zeroExtend(rd.to_s(2) , 5) + zeroExtend(shamt , 5) + function
 
         elsif (stripped[0] == "jr")
             opcode = @@opCodes.fetch(stripped[0].intern)
@@ -126,7 +126,7 @@ class ControlUnit
             rt = "00000"
             function = @@functionCodes.fetch(stripped[0])
             shamt = "00000"
-            binary = opcode + signExtend(rs.to_s(2),5) + rt + rd + shamt + function
+            binary = opcode + zeroExtend(rs.to_s(2),5) + rt + rd + shamt + function
 
         else
             opcode = @@opCodes.fetch(stripped[0].intern)
@@ -135,7 +135,7 @@ class ControlUnit
             rt = @@registerNumbers.fetch stripped[3].strip[0..2]
             function = @@functionCodes.fetch(stripped[0])
             shamt = "00000"
-            binary = opcode + signExtend(rs.to_s(2) , 5) + signExtend(rt.to_s(2) , 5) + signExtend(rd.to_s(2) , 5) + shamt + function
+            binary = opcode + zeroExtend(rs.to_s(2) , 5) + zeroExtend(rt.to_s(2) , 5) + zeroExtend(rd.to_s(2) , 5) + shamt + function
         end
         rtypeSignals stripped[0]
 
@@ -151,25 +151,27 @@ class ControlUnit
             rs = @@registerNumbers.fetch stripped[1].strip[0..2]
             rt = @@registerNumbers.fetch stripped[2].strip[0..2]
             address = stripped[3].strip.to_i * 4 + pc
-            binary = opcode + signExtend(rs.to_s(2) , 5) + signExtend(rt.to_s(2) , 5) + signExtend(address.to_s(2) , 16)
+            binary = opcode + zeroExtend(rs.to_s(2) , 5) + zeroExtend(rt.to_s(2) , 5) + zeroExtend(address.to_s(2) , 16)
 
         when "addi"
             rs = @@registerNumbers.fetch stripped[2].strip[0..2]
             rt = @@registerNumbers.fetch stripped[1].strip[0..2]
+
             address = stripped[3].to_i
-            binary = opcode + signExtend(rs.to_s(2) , 5) + signExtend(rt.to_s(2) , 5) + signExtend(address.to_s(2) , 16)
+
+            binary = opcode + zeroExtend(rs.to_s(2) , 5) + zeroExtend(rt.to_s(2) , 5) + signExtend(address.to_s(2) , 16)
 
         when "lui"
             rs = "00000"
             rt = @@registerNumbers.fetch stripped[1].strip[0..2]
             address = stripped[2].to_i
-            binary = opcode + rs + signExtend(rt.to_s(2) , 5) + signExtend(address.to_s(2) , 16)
+            binary = opcode + rs + zeroExtend(rt.to_s(2) , 5) + zeroExtend(address.to_s(2) , 16)
 
         when "lw","sw","lb","lbu","sb"
             rt = @@registerNumbers.fetch stripped[1].strip[0..2]
             rs = @@registerNumbers.fetch stripped[2].strip[2..-2]
             address = stripped[2][0].to_i * 4 + pc
-            binary = opcode + signExtend(rs.to_s(2) , 5) + signExtend(rt.to_s(2) , 5) + signExtend(address.to_s(2) , 16)
+            binary = opcode + zeroExtend(rs.to_s(2) , 5) + zeroExtend(rt.to_s(2) , 5) + zeroExtend(address.to_s(2) , 16)
         end
         itypeSignals stripped[0]
     end
@@ -179,22 +181,43 @@ class ControlUnit
 
         opcode = @@opCodes.fetch(stripped[0].intern)
         address = stripped[1].to_i * 4
-        binary = opcode + signExtend(address.to_s(2) , 26)
+        binary = opcode + zeroExtend(address.to_s(2) , 26)
         jtypeSignals
     end
 
 
-    def self.signExtend(binary, fillerChar, total)
+    def self.zeroExtend(binary,total)
         i = string.length
+        filler = string[0]
         for i in binary.length..total
-            binary = fillerChar + binary
+            binary = filler + binary
         end
 
         return binary
     end
 
+    def self.zeroExtend(binary,total)
+        i = string.length
+
+        for i in binary.length..total
+            binary = "0" + binary
+        end
+
+        return binary
+    end
+
+
     def self.printHash
         print @@controlSignals
     end
 
+    def self.negate int
+        negBinary = "%b" % ~int
+        withoutDots = negBinary[2..-1]
+        puts withoutDots
+        return (withoutDots.to_i(2) + 0b1).to_s(2)
+    end
+
 end
+
+puts  ControlUnit.negate 6
