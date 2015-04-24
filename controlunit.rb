@@ -106,13 +106,13 @@ class ControlUnit
     end
 
     def self.rEncoder command
-        stripped = command.strip.split
+        stripped = Reg.decode command
 
         if (stripped[0] == "sll" || stripped[0] == "srl")
             opcode = @@opCodes.fetch(stripped[0].intern)
-            rd = @@registerNumbers.fetch stripped[1].strip[0..2]
+            rd = @@registerNumbers.fetch stripped[1].strip
             rs = "00000"
-            rt = @@registerNumbers.fetch stripped[2].strip[0..2]
+            rt = @@registerNumbers.fetch stripped[2].strip
             shamt = stripped[3].strip.to_s(2)
             function = @@functionCodes.fetch(stripped[0])
             binary = opcode + rs + zeroExtend(rt.to_s(2) , 5) + zeroExtend(rd.to_s(2) , 5) + zeroExtend(shamt , 5) + function
@@ -120,7 +120,7 @@ class ControlUnit
         elsif (stripped[0] == "jr")
             opcode = @@opCodes.fetch(stripped[0].intern)
             rd = "00000"
-            rs = @@registerNumbers.fetch stripped[1].strip[0..2]
+            rs = @@registerNumbers.fetch stripped[1].strip
             rt = "00000"
             function = @@functionCodes.fetch(stripped[0])
             shamt = "00000"
@@ -128,9 +128,9 @@ class ControlUnit
 
         else
             opcode = @@opCodes.fetch(stripped[0].intern)
-            rd = @@registerNumbers.fetch stripped[1].strip[0..2]
-            rs = @@registerNumbers.fetch stripped[2].strip[0..2]
-            rt = @@registerNumbers.fetch stripped[3].strip[0..2]
+            rd = @@registerNumbers.fetch stripped[1].strip
+            rs = @@registerNumbers.fetch stripped[2].strip
+            rt = @@registerNumbers.fetch stripped[3].strip
             function = @@functionCodes.fetch(stripped[0])
             shamt = "00000"
             binary = opcode + zeroExtend(rs.to_s(2) , 5) + zeroExtend(rt.to_s(2) , 5) + zeroExtend(rd.to_s(2) , 5) + shamt + function
@@ -141,19 +141,19 @@ class ControlUnit
 
 
     def self.iEncoder (command, pc)
-        stripped = command.strip.split
+        stripped = Reg.decode command
         opcode = @@opCodes.fetch(stripped[0].intern)
 
         case stripped[0]
         when "beq" , "bne"
-            rs = @@registerNumbers.fetch stripped[1].strip[0..2]
-            rt = @@registerNumbers.fetch stripped[2].strip[0..2]
+            rs = @@registerNumbers.fetch stripped[1].strip
+            rt = @@registerNumbers.fetch stripped[2].strip
             address = stripped[3].strip.to_i * 4 + pc
             binary = opcode + zeroExtend(rs.to_s(2) , 5) + zeroExtend(rt.to_s(2) , 5) + zeroExtend(address.to_s(2) , 16)
 
         when "addi"
-            rs = @@registerNumbers.fetch stripped[2].strip[0..2]
-            rt = @@registerNumbers.fetch stripped[1].strip[0..2]
+            rs = @@registerNumbers.fetch stripped[2].strip
+            rt = @@registerNumbers.fetch stripped[1].strip
 
             if(stripped[3].include? "-")
                 number = command.scan(/-\d+/)[0][1..-1]
@@ -169,12 +169,12 @@ class ControlUnit
 
         when "lui"
             rs = "00000"
-            rt = @@registerNumbers.fetch stripped[1].strip[0..2]
+            rt = @@registerNumbers.fetch stripped[1].strip
             address = stripped[2].to_i
             binary = opcode + rs + zeroExtend(rt.to_s(2) , 5) + zeroExtend(address.to_s(2) , 16)
 
         when "lw","sw","lb","lbu","sb"
-            rt = @@registerNumbers.fetch stripped[1].strip[0..2]
+            rt = @@registerNumbers.fetch stripped[1].strip
             rs = @@registerNumbers.fetch (command.scan(/#{Reg.get_rs.join "|"}/)[1])
             address = command.scan(/\s+\d+/)[0].strip.to_i
 
@@ -185,7 +185,7 @@ class ControlUnit
     end
 
     def self.jEncoder command
-        stripped = command.strip.split
+        stripped = Reg.decode command
 
         opcode = @@opCodes.fetch(stripped[0].intern)
         address = stripped[1].to_i * 4
@@ -227,5 +227,5 @@ class ControlUnit
 
 end
 
-puts  ControlUnit.iEncoder "addi $t1, $t1, 6" , 0
+puts  ControlUnit.iEncoder "addi $t1, $0, 6" , 0
 puts ControlUnit.printHash
