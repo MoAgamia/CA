@@ -117,6 +117,10 @@ class Reg
     ["bne", "beq"].include? command.split[0]
   end
 
+  def self.jump_command? command
+    ["j", "jal", "jr"].include? command.split[0]
+  end
+
   def self.run
     print "command_> "
     x = gets.chomp

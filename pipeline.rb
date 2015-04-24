@@ -14,97 +14,86 @@ class Pipeline
 		# @id_control = {}
 		# @ex_control = {}
 		# @mem_control = {}
-		# puts "instructions: #{@instructions}"
-		# puts "labels: #{@labels}"
 		iterate
 	end
 
-	# def iterate
-	# 	array = @instructions.dup
-	# 	arr = []
-	# 	puts "#{array}"
-	# 	for i in 0...(5 - array.length)
-	# 		array << nil
-	# 	end
-	# 	loop do
-	# 		arr.unshift array[0]# unless array.empty?
-	# 		arr.pop if arr.length > 5 || array.empty?
-	# 		puts "------------------------------------------------------------------------------"
-	# 		puts "#{arr}"
-	# 		for i in (arr.length - 1).downto(0)
-	# 			case i
-	# 			when 0
-	# 				fetch if arr[i] != nil
-	# 			when 1
-	# 				decode if arr[i] != nil
-	# 			when 2
-	# 				puts "	execute: #{arr[i]}" if arr[i] != nil
-	# 			when 3
-	# 				memory if arr[i] != nil
-	# 			when 4
-	# 				puts "	write: #{arr[i]}" if arr[i] != nil
-	# 			end
-	# 		end
-	# 		array.shift
-	# 		break if arr.all? {|x| x.nil?}
-	# 	end
-	# end
-
 	def iterate
-		array = @instructions.dup
 		arr = Array.new 5
 		j = 0
 		loop do
 			arr.unshift fetch
 			arr.pop if arr.length > 5
+			break if arr.all? {|x| x.nil?}
 			puts "------------------------------------------------------------------------------"
 			puts "#{arr}"
 			for i in (arr.length - 1).downto(0)
 				case i
 					when 0
-						puts "	fetch: #{arr[i]} ---- #{(@pc-1)/4}" if arr[i] != nil
+						puts "	IF: #{arr[i]} ---- #{(@pc-1)/4}" if arr[i] != nil
+						puts "	IF: NOP" if arr[i] == nil
 					when 1
 						decode arr[i]
 					when 2
-						puts "	execute: #{arr[i]}"
+						execute arr[i]
 					when 3
 						memory arr[i]
 					when 4
-						# puts "	write: #{arr[i]}"
 						write arr[i]
 				end
 			end
-			break if arr.all? {|x| x.nil?}
 		end
 	end
 
 	def fetch
 		return if @pc/4 >= @instructions.length
 		command = @instructions[@pc/4]
-		# @pc += 4
 		@pc = @datapath.adder(@pc, 4).to_i 2
+		if command != nil && (Reg.jump_command? command)
+			puts "	JUMP: #{command} ---- ADDRSS: #{@labels[command.split[1]].to_i / 4}"
+			case command.split[0]
+			when 'j', 'jal'
+				label = @labels[command.split[1]]
+				raise Exception.new "Jump instructions must have a valied address" if label == nil
+				address = label.to_i / 4
+			when 'jr'
+				address = @registers[command.split[1]]/4
+			end
+			comm = "#{command.split[0]} #{address}"
+			binary = ControlUnit.jEncoder comm
+			jump_address = @datapath.get_bits(@datapath.binary_string(@pc, 32) ,28, 31) + @datapath.shift_left_two(@datapath.get_bits(binary, 0, 25))
+			puts "	JMP: #{jump_address}"
+			@registers["$ra"] = @pc - 4 if command.split[0] == 'jal'
+			@pc = jump_address.to_i 2
+		end
 		command
 	end
 
 	def decode command
+		puts "	ID: NOP" if command == nil
 		return if command == nil
 		format = Reg.get_format command
 		case format
-		when 'i'
-			puts "	decode: #{command} ---- #{ControlUnit.iEncoder command, @pc}"
-		when 'r'
-			puts "	decode: #{command} ---- #{ControlUnit.rEncoder command}"
-		when 'j'
-			puts "	decode: #{command} ---- #{ControlUnit.jEncoder command}"
+			when 'i'
+				puts "	iID: #{command}"# ---- #{ControlUnit.iEncoder command, @pc}"
+			when 'r'
+				puts "	rID: #{command}"# ---- #{ControlUnit.rEncoder command}"
+			when 'j'
+				puts "	jID: #{command}"# ---- #{ControlUnit.jEncoder command}"
 		end
 	end
 
 	def execute command
+		puts "	EX: NOP" if command == nil
 		return if command == nil
 		@alu_result = 0
+		puts "	EX: #{command}"
+		if not Reg.jump_command? command
+
+		end
 	end
 
 	def memory command
+		puts "	MEM: NOP" if command == nil
 		return if command == nil
 		split = Reg.decode command
 		if not ["lw", "lb", "lbu", "sw", "sb", "lui"].include? split[0]
@@ -127,10 +116,13 @@ class Pipeline
 		when "sb"
 			@data[address] = @registers[split[1]]
 		end
-		puts "	memory: #{command}"
+		puts "	MEM: #{command}"
 	end
 
 	def write command
+		puts "	WB: NOP" if command == nil
+		return if command == nil
+		puts "	WB: #{command}"
 		# return if command == nil
 		# if @wb_control[:regwrite] == "0"
 		# 	puts "	no write: #{command}"

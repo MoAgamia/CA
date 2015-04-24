@@ -48,6 +48,10 @@ class Datapath
 		(sel == 0 || sel == '0') ? input0 : input1
 	end
 
+	def shift_left_two input
+		input + "00"
+	end
+
 	def signExtend input
 		x = ""
 		bit = input[0]
@@ -66,5 +70,13 @@ class Datapath
 
 	def sll input, amount
 		return (input << amount).to_s(2)
+	end
+
+	def binary_string number, bits
+		"%0#{bits}b" % number
+	end
+
+	def get_bits str, s, e
+		str.reverse[s..e].reverse
 	end
 end
