@@ -172,8 +172,9 @@ class ControlUnit
         when "beq" , "bne"
             rs = @registerNumbers.fetch stripped[1].strip
             rt = @registerNumbers.fetch stripped[2].strip
-            address = stripped[3].strip.to_i * 4 + pc
-            binary = opcode + zeroExtend(rs.to_s(2) , 5) + zeroExtend(rt.to_s(2) , 5) + zeroExtend(address.to_s(2) , 16)
+            address = stripped[3].strip# * 4 + pc
+            address = self.negate(address.to_i * -1) if address.to_i < 0
+            binary = opcode + zeroExtend(rs.to_s(2) , 5) + zeroExtend(rt.to_s(2) , 5) + signExtend(address , 16)
 
         when "addi"
             rs = @registerNumbers.fetch stripped[2].strip
@@ -251,8 +252,12 @@ class ControlUnit
         return (withoutDots.to_i(2) + 0b1).to_s(2)
     end
 
+    def self.get_register binary
+        @registerNumbers.key(binary.to_i 2)
+    end
+
 end
 
 # puts ControlUnit.jEncoder "jal LOOP"
-puts ControlUnit.iEncoder "addi $t1, $0, 6" , 0
-puts ControlUnit.printHash
+# puts ControlUnit.iEncoder "addi $t1, $0, 6" , 0
+# puts ControlUnit.printHash
