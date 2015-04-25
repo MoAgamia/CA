@@ -57,7 +57,7 @@ class Gui
 
     def initialize
         frame = JFrame.new("MIPS pipelined simulator")
-        frame.setMinimumSize(Dimension.new(800,800))
+        frame.setSize(Dimension.new(800,800))
         frame.setLocation((@@toolkits.getScreenSize().getWidth  - 400) / 2 , (@@toolkits.getScreenSize().getHeight - 400) / 2)
 
         registersPanel = JPanel.new(GridLayout.new(10,1))
