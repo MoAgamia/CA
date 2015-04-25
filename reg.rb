@@ -59,7 +59,9 @@ class Reg
     when "beq", "bne"
       (command =~ /^(\s*)(#{op})(\s+)(#{@rs.join "|"})(,\s+)(#{@rs.join "|"})(,\s+)([a-zA-Z]\w*)(\s*)$/) != nil
     else
-      if op[0] == 'l'
+      if op == "lui"
+          (command =~ /^(\s*)(#{op})(\s+)(#{@rd.join "|"})(,\s+)(\d+)(\s*)$/) != nil
+          elsif ((op == "lw") || (op == "lu") ||(op == "lb") )
         (command =~ /^(\s*)(#{op})(\s+)(#{@rd.join "|"})(,\s+)(\d+\((#{@rs.join "|"})\))(\s*)$/) != nil
       else
         (command =~ /^(\s*)(#{op})(\s+)(#{@rs.join "|"})(,\s+)(\d+\((#{@rs.join "|"})\))(\s*)$/) != nil
@@ -140,7 +142,7 @@ class Reg
 
   # puts self.check("lbu $t1, $t0, 8")
 
-  # puts self.check("lbu $0, 0($t0)")
+   puts self.check("lbu $0, 0($t0)")
 
   # puts (self.check("lbu $t1, 0($t1)").to_s + "this one")
 
@@ -153,5 +155,7 @@ class Reg
   # puts self.check("beq $0, $0, LOOP3")
 
   # puts self.check("beq $0, $0, 9")
+
+  puts self.check("lui $t0, 16")
 
 end
