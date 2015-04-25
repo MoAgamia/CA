@@ -2,30 +2,30 @@ class ControlUnit
     require './reg'
 
     @controlSignals = {:regdst => "0", :branch => "0", :memwrite => "0", :memread => "0", :regwrite => "0", :memtoreg => "0",
-                        :jump => "0",  :alusrc => "0", :aluop => "0", :alucontrol => "0"}
+                       :jump => "0",  :alusrc => "0", :aluop => "0", :alucontrol => "0"}
 
     @opCodes = {:lw =>"100011", :lb =>"100000", :lbu =>"100100", :sw =>"101011", :sb =>"101000", :lui =>"001111", :beq =>"000100",
-                 :bne =>"000101", :addi =>"001000", :add =>"000000", :sub =>"000000", :nor =>"000000", :and =>"000000", :slt =>"000000",
-                 :sltu =>"000000", :sll =>"000000", :srl =>"000000", :jr =>"000000", :j =>"000010", :jal=>"000011"}
+                :bne =>"000101", :addi =>"001000", :add =>"000000", :sub =>"000000", :nor =>"000000", :and =>"000000", :slt =>"000000",
+                :sltu =>"000000", :sll =>"000000", :srl =>"000000", :jr =>"000000", :j =>"000010", :jal=>"000011"}
 
     @functionCodes = {"add"=>"100000", "sub"=>"100010", "nor"=>"100111", "and"=>"100100", "slt"=>"101010", "sltu"=>"101011",
-                       "sll"=>"000000", "srl"=>"000010", "jr"=>"001000"}
+                      "sll"=>"000000", "srl"=>"000010", "jr"=>"001000"}
 
     @registerNumbers = {"$zero"=>0, "$0"=>0, "$at"=>1, "$v0"=>2, "$v1"=>3, "$t8"=>24, "$t9"=>25, "$k0"=>26, "$k1"=>27, "$gp"=>28,
-                         "$sp"=>29, "$fp"=>30, "$ra"=>31, "$t0"=>8, "$t1"=>9, "$t2"=>10, "$t3"=>11, "$t4"=>12, "$t5"=>13, "$t6"=>14, "$t7"=>15, "$a0"=>4,
-                         "$a1"=>5, "$a2"=>6, "$a3"=>7, "$s0"=>16, "$s1"=>17, "$s2"=>18, "$s3"=>19, "$s4"=>20, "$s5"=>21, "$s6"=>22, "$s7"=>23}
+                        "$sp"=>29, "$fp"=>30, "$ra"=>31, "$t0"=>8, "$t1"=>9, "$t2"=>10, "$t3"=>11, "$t4"=>12, "$t5"=>13, "$t6"=>14, "$t7"=>15, "$a0"=>4,
+                        "$a1"=>5, "$a2"=>6, "$a3"=>7, "$s0"=>16, "$s1"=>17, "$s2"=>18, "$s3"=>19, "$s4"=>20, "$s5"=>21, "$s6"=>22, "$s7"=>23}
 
     @aluControl = {"add" => "0010", "sub" => "0110", "and" => "0000", "or" => "0001", "slt" => "0111", "lw" => "0010", "sw" => "0010", "beq" => "0110", "sll" => "0011", "srl" => "0100", "nor" => "0101"}
 
     def self.get_signals command
         format = Reg.get_format command
         case format
-            when 'i'
-                self.itypeSignals command
-            when 'r'
-                self.rtypeSignals command
-            when 'j'
-                self.jtypeSignals
+        when 'i'
+            self.itypeSignals command
+        when 'r'
+            self.rtypeSignals command
+        when 'j'
+            self.jtypeSignals
         end
     end
 
@@ -41,7 +41,7 @@ class ControlUnit
         @controlSignals[:memwrite] = "0"
         @controlSignals[:memread] = "0"
         @controlSignals[:regwrite] = "1"
-        @controlSignals[:memtoreg] = "0"
+        @controlSignals[:memtoreg] = "1"
         @controlSignals[:jump] = "0"
         @controlSignals[:alusrc] = "0"
         @controlSignals[:aluop] ="10"
@@ -128,12 +128,12 @@ class ControlUnit
     def self.encode command, pc=nil
         format = Reg.get_format command
         case format
-            when 'i'
-                self.iEncoder command, pc
-            when 'r'
-                self.rEncoder command
-            when 'j'
-                self.jEncoder command
+        when 'i'
+            self.iEncoder command, pc
+        when 'r'
+            self.rEncoder command
+        when 'j'
+            self.jEncoder command
         end
     end
 
@@ -167,7 +167,7 @@ class ControlUnit
             shamt = "00000"
             binary = opcode + zeroExtend(rs.to_s(2) , 5) + zeroExtend(rt.to_s(2) , 5) + zeroExtend(rd.to_s(2) , 5) + shamt + function
         end
-        sign = rtypeSignals stripped[0]
+        # sign = rtypeSignals stripped[0]
         binary
     end
 
@@ -180,8 +180,9 @@ class ControlUnit
         when "beq" , "bne"
             rs = @registerNumbers.fetch stripped[1].strip
             rt = @registerNumbers.fetch stripped[2].strip
-            address = stripped[3].strip.to_i * 4 + pc
-            binary = opcode + zeroExtend(rs.to_s(2) , 5) + zeroExtend(rt.to_s(2) , 5) + zeroExtend(address.to_s(2) , 16)
+            address = stripped[3].strip# * 4 + pc
+            address = self.negate(address.to_i * -1) if address.to_i < 0
+            binary = opcode + zeroExtend(rs.to_s(2) , 5) + zeroExtend(rt.to_s(2) , 5) + signExtend(address , 16)
 
         when "addi"
             rs = @registerNumbers.fetch stripped[2].strip
@@ -212,7 +213,7 @@ class ControlUnit
 
             binary = opcode + zeroExtend(rs.to_s(2) , 5) + zeroExtend(rt.to_s(2) , 5) + zeroExtend(address.to_s(2) , 16)
         end
-        sign = itypeSignals stripped[0]
+        # sign = itypeSignals stripped[0]
         binary
     end
 
@@ -223,7 +224,7 @@ class ControlUnit
         address = stripped[1].to_i# * 4
         # binary = opcode + zeroExtend(address.to_s(2) , 26)
         binary = opcode + ("%026b" % address)
-        sign = jtypeSignals
+        # sign = jtypeSignals
         binary
     end
 
@@ -259,8 +260,12 @@ class ControlUnit
         return (withoutDots.to_i(2) + 0b1).to_s(2)
     end
 
+    def self.get_register binary
+        @registerNumbers.key(binary.to_i 2)
+    end
+
 end
 
 # puts ControlUnit.jEncoder "jal LOOP"
-puts ControlUnit.iEncoder "addi $t1, $0, 6" , 0
-puts ControlUnit.printHash
+# puts ControlUnit.iEncoder "addi $t1, $0, 6" , 0
+# puts ControlUnit.printHash
