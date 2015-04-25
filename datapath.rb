@@ -59,6 +59,10 @@ class Datapath
 		return (input << amount).to_s(2)
 	end
 
+        def srl input, amount
+            return (input >> amount).to_s(2)
+        end
+
 	def binary_string number, bits
 		"%0#{bits}b" % number
 	end

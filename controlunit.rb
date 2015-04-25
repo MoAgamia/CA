@@ -151,7 +151,7 @@ class ControlUnit
             rd = @registerNumbers.fetch stripped[1].strip
             rs = "00000"
             rt = @registerNumbers.fetch stripped[2].strip
-            shamt = stripped[3].strip.to_s(2)
+            shamt = stripped[3].strip.to_i.to_s(2)
             function = @functionCodes.fetch(stripped[0])
             binary = opcode + rs + zeroExtend(rt.to_s(2) , 5) + zeroExtend(rd.to_s(2) , 5) + zeroExtend(shamt , 5) + function
 
