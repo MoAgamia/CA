@@ -18,7 +18,11 @@ class Information
 	end
 
 	def replace hash, index
-		@array[index][hash.keys[0]] = hash[hash.keys[0]]
+		# @array[index][hash.keys[0]] = hash[hash.keys[0]]
+		puts "REM:: #{hash.keys[0]}"
+		remove hash.keys[0], index
+		append hash, index
+		puts "ARR:: #{@array[index]}"
 	end
 
 	def remove key, index

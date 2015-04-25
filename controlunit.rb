@@ -41,7 +41,7 @@ class ControlUnit
         @controlSignals[:memwrite] = "0"
         @controlSignals[:memread] = "0"
         @controlSignals[:regwrite] = "1"
-        @controlSignals[:memtoreg] = "0"
+        @controlSignals[:memtoreg] = "1"
         @controlSignals[:jump] = "0"
         @controlSignals[:alusrc] = "0"
         if(@aluControl.include? function)
@@ -159,7 +159,7 @@ class ControlUnit
             shamt = "00000"
             binary = opcode + zeroExtend(rs.to_s(2) , 5) + zeroExtend(rt.to_s(2) , 5) + zeroExtend(rd.to_s(2) , 5) + shamt + function
         end
-        sign = rtypeSignals stripped[0]
+        # sign = rtypeSignals stripped[0]
         binary
     end
 
@@ -205,7 +205,7 @@ class ControlUnit
 
             binary = opcode + zeroExtend(rs.to_s(2) , 5) + zeroExtend(rt.to_s(2) , 5) + zeroExtend(address.to_s(2) , 16)
         end
-        sign = itypeSignals stripped[0]
+        # sign = itypeSignals stripped[0]
         binary
     end
 
@@ -216,7 +216,7 @@ class ControlUnit
         address = stripped[1].to_i# * 4
         # binary = opcode + zeroExtend(address.to_s(2) , 26)
         binary = opcode + ("%026b" % address)
-        sign = jtypeSignals
+        # sign = jtypeSignals
         binary
     end
 
