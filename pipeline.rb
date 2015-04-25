@@ -43,7 +43,8 @@ class Pipeline
 			end
 		end
 		puts "------------------------------------------------------------------------------"
-		puts " VAL: #{@registers}"
+		puts "	VAL: #{@registers}"
+		puts "	MEM: #{@data}"
 	end
 
 	def fetch
@@ -77,8 +78,8 @@ class Pipeline
 			parsed[3] = address.to_s
 			parsed = parsed.join(" ")
 			encoding = ControlUnit.iEncoder parsed, @pc
-			puts "	LOC: #{parsed}"
-			puts "	EN: #{encoding}"
+			puts "LOC: #{parsed}"
+			puts "EN: #{encoding}"
 		elsif command != nil
 			encoding = ControlUnit.encode command
 		end
@@ -92,13 +93,13 @@ class Pipeline
 		hash = @info.array[1]
 		encoding = hash[:encoding]
 		signals = ControlUnit.get_signals(command.split[0])
-		@info.append ({:signals => signals, :sign_extended => @datapath.signExtend(@datapath.get_bits(encoding, 0, 15))}), 1
+		@info.append ({:sign_extended => @datapath.signExtend(@datapath.get_bits(encoding, 0, 15))}), 1
 		two = ControlUnit.get_register(@datapath.get_bits encoding, 16, 20)
 		dest = ControlUnit.get_register(@datapath.get_bits encoding, 11, 15)
 		@info.append ({:one => ControlUnit.get_register(@datapath.get_bits encoding, 21, 25), :two => two}), 1
-		@info.append ({:dest => @datapath.mux(signals[:regdst], two, dest)}), 1
+		@info.append ({:dest => @datapath.mux(signals[:regdst], two, dest), :command => command}), 1
 		puts "	ID: #{command} ---- EN: #{encoding} ---- SIG: #{signals}"
-		@info.remove :encoding, 1
+		# @info.remove :encoding, 1
 	end
 
 	def execute command
@@ -107,22 +108,20 @@ class Pipeline
 		return if Reg.jump_command? command
 		hash = @info.array[2]
 		pc = hash[:pc]
-		signals = hash[:signals]
+		signals = ControlUnit.get_signals(command.split[0])
 		sign_extended = hash[:sign_extended]
-		add_result = @datapath.adder(pc, @datapath.shift_left_two(sign_extended).to_i(2))
-		# puts "	ADD: #{add_result.to_i 2} ---- PC: #{pc} ---- 16: #{@datapath.shift_left_two(@datapath.signExtend(@datapath.get_bits(encoding, 0, 15))).to_i(2)}"
+		addr = get_int(@datapath.get_bits((@datapath.shift_left_two(sign_extended)), 0, 31), true)
+		add_result = @datapath.adder(pc + 4, addr)
 		one = hash[:one]
 		two = hash[:two]
-		aluop = signals[:aluop]
-		alu = ALU.new @registers[one], @datapath.mux(signals[:alusrc], @registers[two], sign_extended.to_i(2)), aluop
+		aluop = signals[:alucontrol]
+		alu = ALU.new @registers[one], @datapath.mux(signals[:alusrc], @registers[two], get_int(sign_extended, true)), aluop
 		alu = alu.execute
 		alu_result = alu[:res]
+		puts "RES: #{get_int(sign_extended, true)}"
 		zero = alu[:zero]
-		@pc = @datapath.mux (zero & signals[:branch].to_i), @pc, add_result.to_i
-
-		@info.remove :sign_extended, 2
-		@info.remove :one, 2
-		@info.remove :two, 2
+		puts "OK: #{zero & signals[:branch].to_i} ---- #{add_result.to_i 2} ---- #{addr} ---- #{pc}"
+		@pc = @datapath.mux (zero & signals[:branch].to_i), @pc, add_result.to_i(2)
 		@info.append ({:alu => alu_result}), 2
 
 		puts "	EX: #{command} ---- ONE: #{one} ---- TWO: #{two} ---- ALU: #{aluop} ---- SIG: #{signals}"
@@ -133,16 +132,17 @@ class Pipeline
 		puts "	MEM: NOP" if command == nil
 		return if command == nil
 		hash = @info.array[3]
-		signals = hash[:signals]
+		signals = ControlUnit.get_signals(command.split[0])
 		split = Reg.decode command
-		if not ["lw", "lb", "lbu", "sw", "sb", "lui"].include? split[0]
+		if signals[:memread] == '0' && signals[:memwrite] == '0'
 			puts "	no memory: #{command} ---- SIG: #{signals}"
 			return
 		end
-		rs = @registers[split.last.scan(/#{Reg.get_rs.join "|"}/)[0]]
+		# rs = @registers[(split.last.scan(/#{Reg.get_rs.join "|"}/)[0]).to_s]
 		offset = split.last.scan(/\d+/)[0].to_i
-		raise Exception.new "Cannot address a negative memory index" if rs < 0
-		address = rs + offset
+		raise Exception.new "Cannot address a negative memory index" if hash[:alu].to_i < 0
+		puts "ALU: #{hash[:alu]}"
+		address = hash[:alu] + offset
 		case split[0]
 		when "lw", "lui"
 			raise Exception.new "Offset must be a multiple of four" if offset % 4 != 0
@@ -163,11 +163,42 @@ class Pipeline
 		puts "	WB: NOP" if command == nil
 		return if command == nil
 		hash = @info.array[4]
-		signals = hash[:signals]
+		signals = ControlUnit.get_signals(command.split[0])
 		alu = hash[:alu]
 		read = hash[:memory]
 		dest = hash[:dest]
-		@registers[dest] = @datapath.mux signals[:memtoreg], read, alu if signals[:regwrite] == "1"
-		puts "	WB: #{command} ---- DEST: #{dest} ---- SIG: #{signals}"
+		@registers[dest] = @datapath.mux signals[:memtoreg], alu, read  if signals[:regwrite] == "1"
+		puts "	WB: #{command} ---- DEST: #{dest} ---- VAL: #{alu} ---- SIG: #{signals}"
 	end
+
+	#HELPER METHODS
+	def get_int binary, signed=false
+		return binary.to_i 2 if not signed
+		negative = true if binary[0] == '1'
+		return binary.to_i 2 if not negative
+		flipped = (binary.length).times.map {|e|
+				if binary[e] == '1'
+					'0'
+				else
+					'1'
+				end
+			}.join
+			flipped = -(1 + flipped.to_i(2))
+	end
+
+	def get_binary int, signed
+      return "%016b" % int if not signed
+      negative = true if int < 0
+      return "%016b" % int if not negative
+      i = -int
+      s = "%016b" % i
+      flipped = (s.length).times.map {|e|
+          if s[e] == '1'
+              '0'
+          else
+              '1'
+          end
+      }.join
+      flipped = (1 + flipped.to_i(2)).to_s 2
+  end
 end

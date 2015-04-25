@@ -121,18 +121,18 @@ class Reg
     ["j", "jal", "jr"].include? command.split[0]
   end
 
-  def self.run
-    print "command_> "
-    x = gets.chomp
-    while x != "q"
-      res = self.check(x)
-      out = "#{res}"
-      out += ": #{self.decode x}" if res == true
-      puts out
-      print "command_> "
-      x = gets.chomp
-    end
-  end
+  # def self.run
+  #   print "command_> "
+  #   x = gets.chomp
+  #   while x != "q"
+  #     res = self.check(x)
+  #     out = "#{res}"
+  #     out += ": #{self.decode x}" if res == true
+  #     puts out
+  #     print "command_> "
+  #     x = gets.chomp
+  #   end
+  # end
 
   #   self.run
 
