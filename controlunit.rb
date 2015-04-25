@@ -2,7 +2,7 @@ class ControlUnit
     require './reg'
 
     @controlSignals = {:regdst => "0", :branch => "0", :memwrite => "0", :memread => "0", :regwrite => "0", :memtoreg => "0",
-                        :jump => "0",  :alusrc => "0", :aluop => "0"}
+                        :jump => "0",  :alusrc => "0", :aluop => "0", :alucontrol => "0"}
 
     @opCodes = {:lw =>"100011", :lb =>"100000", :lbu =>"100100", :sw =>"101011", :sb =>"101000", :lui =>"001111", :beq =>"000100",
                  :bne =>"000101", :addi =>"001000", :add =>"000000", :sub =>"000000", :nor =>"000000", :and =>"000000", :slt =>"000000",
@@ -15,7 +15,7 @@ class ControlUnit
                          "$sp"=>29, "$fp"=>30, "$ra"=>31, "$t0"=>8, "$t1"=>9, "$t2"=>10, "$t3"=>11, "$t4"=>12, "$t5"=>13, "$t6"=>14, "$t7"=>15, "$a0"=>4,
                          "$a1"=>5, "$a2"=>6, "$a3"=>7, "$s0"=>16, "$s1"=>17, "$s2"=>18, "$s3"=>19, "$s4"=>20, "$s5"=>21, "$s6"=>22, "$s7"=>23}
 
-    @aluControl = {"add" => "0010", "sub" => "0110", "and" => "0000", "or" => "0001", "slt" => "0111"}
+    @aluControl = {"add" => "0010", "sub" => "0110", "and" => "0000", "or" => "0001", "slt" => "0111", "lw" => "0010", "sw" => "0010", "beq" => "0110", "sll" => "0011", "srl" => "0100", "nor" => "0101"}
 
     def self.get_signals command
         format = Reg.get_format command
@@ -44,10 +44,12 @@ class ControlUnit
         @controlSignals[:memtoreg] = "0"
         @controlSignals[:jump] = "0"
         @controlSignals[:alusrc] = "0"
+        @controlSignals[:aluop] ="10"
+
         if(@aluControl.include? function)
-            @controlSignals[:aluop] = @aluControl.fetch function
+            @controlSignals[:alucontrol] = @aluControl.fetch function.strip
         else
-            @controlSignals[:aluop] = "0000"
+            @controlSignals[:alucontrol] = "1111"
         end
         @controlSignals
     end
@@ -64,6 +66,7 @@ class ControlUnit
             @controlSignals[:regwrite] = "0"
             @controlSignals[:memtoreg] = "1"
             @controlSignals[:alusrc] = "0"
+            @controlSignals[:aluop] ="01"
         when "lw", "lb" , "lbu"
             @controlSignals[:branch] = "0"
             @controlSignals[:memwrite] = "0"
@@ -71,6 +74,7 @@ class ControlUnit
             @controlSignals[:regwrite] = "1"
             @controlSignals[:memtoreg] = "0"
             @controlSignals[:alusrc] = "1"
+            @controlSignals[:aluop] = "00"
         when "sw" , "sb"
             @controlSignals[:branch] = "0"
             @controlSignals[:memwrite] = "1"
@@ -78,6 +82,7 @@ class ControlUnit
             @controlSignals[:regwrite] = "0"
             @controlSignals[:memtoreg] = "1"
             @controlSignals[:alusrc] = "1"
+            @controlSignals[:aluop] ="00"
         when "addi"
             @controlSignals[:branch] = "0"
             @controlSignals[:memwrite] = "0"
@@ -85,6 +90,7 @@ class ControlUnit
             @controlSignals[:regwrite] = "1"
             @controlSignals[:memtoreg] = "1"
             @controlSignals[:alusrc] = "0"
+            @controlSignals[:aluop] ="11"
         when "lui"
             @controlSignals[:branch] = "0"
             @controlSignals[:memwrite] = "0"
@@ -92,12 +98,13 @@ class ControlUnit
             @controlSignals[:regwrite] = "1"
             @controlSignals[:memtoreg] = "0"
             @controlSignals[:alusrc] = "1"
+            @controlSignals[:aluop] ="11"
         end
 
         if(@aluControl.include? function)
-            @controlSignals[:aluop] = @aluControl.fetch function
+            @controlSignals[:alucontrol] = @aluControl.fetch function.strip
         else
-            @controlSignals[:aluop] = "0000"
+            @controlSignals[:alucontrol] = "1111"
         end
         @controlSignals
     end
@@ -111,7 +118,8 @@ class ControlUnit
         @controlSignals[:regwrite] = "0"
         @controlSignals[:memtoreg] = "0"
         @controlSignals[:alusrc] = "0"
-        @controlSignals[:aluop] = "0000"
+        @controlSignals[:alucontrol] = "1111"
+        @controlSignals[:aluop] ="11"
         @controlSignals
     end
 
