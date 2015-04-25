@@ -120,6 +120,8 @@ class Pipeline
 		alu_result = alu[:res]
 		puts "RES: #{get_int(sign_extended, true)}"
 		zero = alu[:zero]
+		zero = flip_bits(zero.to_s).to_i(2) if command.split.first == "bne"
+		puts "ZERO #{zero}"
 		puts "OK: #{zero & signals[:branch].to_i} ---- #{add_result.to_i 2} ---- #{addr} ---- #{pc}"
 		@pc = @datapath.mux (zero & signals[:branch].to_i), @pc, add_result.to_i(2)
 		@info.append ({:alu => alu_result}), 2
@@ -201,4 +203,14 @@ class Pipeline
       }.join
       flipped = (1 + flipped.to_i(2)).to_s 2
   end
+
+  def flip_bits binary
+		flipped = (binary.length).times.map {|e|
+			if binary[e] == '1'
+				'0'
+			else
+				'1'
+			end
+		}.join
+	end
 end
